@@ -52,6 +52,9 @@ public class SpringIntegrationConfig {
     @Value("${database.polling-interval.rate-in-milliseconds}")
     private Long pollingRateInMilliSeconds;
     
+    @Value("${database.max-messages-per-poll}")
+    private Long maxMessagesPerPoll;
+    
     @Bean
     public PollerMetadata poller(PlatformTransactionManager transactionManager) {
         PeriodicTrigger trigger = new PeriodicTrigger(pollingRateInMilliSeconds);
@@ -63,6 +66,7 @@ public class SpringIntegrationConfig {
         
         PollerMetadata poller = new PollerMetadata();
         poller.setTrigger(trigger);
+        poller.setMaxMessagesPerPoll(maxMessagesPerPoll);
         poller.setAdviceChain(Collections.singletonList(interceptor));
         poller.setErrorHandler(new ErrorHandler() {
             @Override
