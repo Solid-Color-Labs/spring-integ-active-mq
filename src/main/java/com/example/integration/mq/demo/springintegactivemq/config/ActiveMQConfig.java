@@ -5,7 +5,14 @@ import org.apache.activemq.command.ActiveMQQueue;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.integration.jms.DynamicJmsTemplate;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
+import org.springframework.jms.support.converter.MessageConverter;
+import org.springframework.jms.support.converter.MessageType;
 
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
 import javax.jms.Queue;
 
 @Configuration
@@ -19,9 +26,27 @@ public class ActiveMQConfig {
         return new ActiveMQQueue(helloQueue);
     }
     
+    @Bean
+    public JmsTemplate template(ConnectionFactory connectionFactory) {
+        JmsTemplate template = new DynamicJmsTemplate();
+        template.setConnectionFactory(connectionFactory);
+        template.setMessageConverter(jsonJmsMessageConverter());
+        return template;
+    }
+    
+    //TODO: How do I get datasource and convert to JSON?
+    @Bean // Serialize message content to json using TextMessage
+    public MessageConverter jsonJmsMessageConverter() {
+        MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
+        converter.setTargetType(MessageType.TEXT);
+        converter.setTypeIdPropertyName("_type");
+        return converter;
+    }
+    
 //    @Bean
-//    public ActiveMQConnectionFactory connectionFactory() {
-//        ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory();
+//    public ConnectionFactory connectionFactory() throws JMSException {
+//        ConnectionFactory factory = new ActiveMQConnectionFactory();
+//        factory.createConnection();
 //        return factory;
 //    }
     

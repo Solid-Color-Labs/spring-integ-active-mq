@@ -1,6 +1,5 @@
 package com.example.integration.mq.demo.springintegactivemq.config;
 
-import org.apache.activemq.command.ActiveMQQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +14,9 @@ import org.springframework.integration.jms.DynamicJmsTemplate;
 import org.springframework.integration.jms.JmsSendingMessageHandler;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.messaging.MessageChannel;
+import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
+import org.springframework.jms.support.converter.MessageConverter;
+import org.springframework.jms.support.converter.MessageType;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.scheduling.support.PeriodicTrigger;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -42,7 +43,7 @@ _________________________________________
         
         https://docs.spring.io/spring-integration/reference/html/jdbc.html
         https://springframework.guru/spring-boot-example-of-spring-integration-and-activemq/
-        http://www.devglan.com/spring-boot/spring-boot-jms-activemq-example
+        http://www.devglan.com/spring-boot/spring-boot-jms-activemq-example''https://spring.io/guides/gs/messaging-jms/
          */
 @Configuration
 public class SpringIntegrationConfig {
@@ -80,8 +81,8 @@ public class SpringIntegrationConfig {
     @Bean
     @InboundChannelAdapter(value = "helloWorldChannel", channel = "helloWorldChannel", poller = @Poller("poller"))
     public MessageSource<?> helloWorldMessageSource(DataSource dataSource) {
-        JdbcPollingChannelAdapter adapter = new JdbcPollingChannelAdapter(dataSource, "select * from item where status = 2");
-        adapter.setUpdateSql("update item set status = 10 where id in (:id)"); //update marks items as polled so they don't show up in next poll
+        JdbcPollingChannelAdapter adapter = new JdbcPollingChannelAdapter(dataSource, "select * from item where type = 2");
+        adapter.setUpdateSql("update item set type = 10 where id in (:id)"); //update marks items as polled so they don't show up in next poll
         return adapter; //TODO: maybe set rowmapper? Or will it automatically map?
     }
     
@@ -93,16 +94,5 @@ public class SpringIntegrationConfig {
         return handler;
     }
     
-//    @Bean
-//    @ServiceActivator(inputChannel = "helloWorldChannel")
-//    public MessageHandler jsmOutboundAdapter(ConnectionFactory connectionFactory, Queue queue) {
-//        JmsTemplate template = new DynamicJmsTemplate();
-//        template.setConnectionFactory(connectionFactory);
-//        JmsSendingMessageHandler handler = new JmsSendingMessageHandler(template);
-//        handler.setDestination(queue);
-//        return handler;
-//    }
-    
-    //TODO: create outbound channeladapter, which will be ActiveMQ jms queue
     
 }
