@@ -1,10 +1,9 @@
 package com.example.integration.mq.demo.springintegactivemq.domain;
 
-import java.io.Serializable;
-
-public class Item implements Serializable {
+public class Item {
     
     private Integer id;
+    
     private Integer type;
     
     public Integer getId() {

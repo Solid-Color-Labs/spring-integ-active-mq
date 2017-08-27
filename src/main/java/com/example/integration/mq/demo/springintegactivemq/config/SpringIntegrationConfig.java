@@ -1,6 +1,5 @@
 package com.example.integration.mq.demo.springintegactivemq.config;
 
-import com.example.integration.mq.demo.springintegactivemq.domain.Item;
 import com.example.integration.mq.demo.springintegactivemq.persistence.ItemRowMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,14 +13,9 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.jdbc.JdbcPollingChannelAdapter;
-import org.springframework.integration.jms.DynamicJmsTemplate;
 import org.springframework.integration.jms.JmsSendingMessageHandler;
 import org.springframework.integration.scheduling.PollerMetadata;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
-import org.springframework.jms.support.converter.MessageConverter;
-import org.springframework.jms.support.converter.MessageType;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.scheduling.support.PeriodicTrigger;
@@ -31,11 +25,8 @@ import org.springframework.transaction.interceptor.MatchAlwaysTransactionAttribu
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.util.ErrorHandler;
 
-import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.sql.DataSource;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collections;
 
 /*
@@ -88,13 +79,12 @@ public class SpringIntegrationConfig {
         poller.setErrorHandler(new ErrorHandler() {
             @Override
             public void handleError(Throwable throwable) {
-                LOGGER.error("Poller failed.", throwable);
+                LOGGER.error("Poller failed...", throwable);
             }
         });
         return  poller;
     }
     
-    //todo eventually use JPAPollingChannelAdapter
     @Bean
     @InboundChannelAdapter(value = "helloWorldChannel", channel = "helloWorldChannel", poller = @Poller("poller"))
     public MessageSource<?> helloWorldMessageSource(DataSource dataSource) {
