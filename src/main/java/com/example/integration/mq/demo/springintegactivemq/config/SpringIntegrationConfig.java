@@ -16,6 +16,7 @@ import org.springframework.integration.jdbc.JdbcPollingChannelAdapter;
 import org.springframework.integration.jms.JmsSendingMessageHandler;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.scheduling.support.PeriodicTrigger;
@@ -47,7 +48,6 @@ _________________________________________
         https://docs.spring.io/spring-integration/reference/html/messaging-channels-section.html
          */
 @Configuration
-@EnableIntegration
 public class SpringIntegrationConfig {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(SpringIntegrationConfig.class);
@@ -56,7 +56,7 @@ public class SpringIntegrationConfig {
     private Long pollingRateInMilliSeconds;
     
     @Value("${database.max-messages-per-poll}")
-    private Long maxMessagesPerPoll;
+    private Integer maxMessagesPerPoll;
     
     @Bean
     public MessageChannel helloWorldChannel() {
@@ -74,7 +74,7 @@ public class SpringIntegrationConfig {
         
         PollerMetadata poller = new PollerMetadata();
         poller.setTrigger(trigger);
-        poller.setMaxMessagesPerPoll(maxMessagesPerPoll);
+        //poller.setMaxMessagesPerPoll(maxMessagesPerPoll);
         poller.setAdviceChain(Collections.singletonList(interceptor));
         poller.setErrorHandler(new ErrorHandler() {
             @Override
@@ -91,13 +91,14 @@ public class SpringIntegrationConfig {
         JdbcPollingChannelAdapter adapter = new JdbcPollingChannelAdapter(dataSource, "select * from item where type = 2");
         adapter.setUpdateSql("update item set type = 10 where id in (:id)"); //update marks items as polled so they don't show up in next poll
         adapter.setRowMapper(new ItemRowMapper());
-        adapter.setMaxRowsPerPoll(maxMessagesPerPoll.intValue()); // use poller.setMaxMessagesPerPoll or this (adapter.setMaxRowsPerPoll?
+        adapter.setMaxRowsPerPoll(maxMessagesPerPoll);
         return adapter;
     }
     
     @Bean
     @ServiceActivator(inputChannel = "helloWorldChannel")
-    public MessageHandler jsmOutboundAdapter(JmsTemplate template, Queue queue) {
+    public MessageHandler jsmOutboundAdapter(JmsTemplate template, Queue queue, MessageConverter converter) {
+        template.setMessageConverter(converter);
         JmsSendingMessageHandler handler = new JmsSendingMessageHandler(template);
         handler.setDestination(queue);
         return handler;
